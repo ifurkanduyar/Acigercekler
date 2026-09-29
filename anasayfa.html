@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aramızda Kalsın</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1D0F26;--s:#2C1735;--s2:#3A2043;--gold:#CB9A46;--rose:#D98A96;--text:#F4E9DE;--mut:#B6A0BE;--line:rgba(244,233,222,.14);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:'Karla',sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:480px;padding:36px 22px calc(24px + env(safe-area-inset-bottom,0px));position:relative;overflow:hidden}
+#app::before{content:"";position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:360px;height:360px;background:radial-gradient(circle,rgba(203,154,70,.18),transparent 70%);pointer-events:none}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:42px;line-height:1.05;color:var(--gold);margin:0 0 8px;position:relative}
+.sub{color:var(--mut);font-size:15px;line-height:1.5;margin:0 0 30px;max-width:32ch;position:relative}
+.card{display:block;background:var(--s);border:1px solid var(--line);border-radius:26px 12px 26px 12px;padding:22px 22px 20px;margin-bottom:16px;text-decoration:none;color:var(--text);position:relative}
+.card.soon{opacity:.5}
+.ctitle{font-family:'Fraunces',serif;font-weight:600;font-size:21px;margin:0 0 6px}
+.cdesc{color:var(--mut);font-size:14px;line-height:1.5;margin:0 0 14px}
+.play{display:inline-block;background:var(--gold);color:#241308;font-weight:700;font-size:14px;padding:9px 16px;border-radius:10px}
+.badge{position:absolute;top:20px;right:20px;background:rgba(217,138,150,.18);color:var(--rose);font-weight:700;font-size:12px;padding:5px 10px;border-radius:999px}
+footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:10px;position:relative}
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Aramızda Kalsın</h1>
+  <p class="sub">Çiftler için sohbet ve yarışma oyunları koleksiyonu. Aşağıdan bir oyun seç.</p>
+
+  <a class="card" href="duello.html">
+    <div class="ctitle">Düello</div>
+    <p class="cdesc">İki telefondan, sunucu eşliğinde bilgi yarışması. İlk doğru bilen puanı alır.</p>
+    <span class="play">Oyna →</span>
+  </a>
+
+  <div class="card soon">
+    <span class="badge">Yakında</span>
+    <div class="ctitle">İtiraf Kartları</div>
+    <p class="cdesc" style="margin-bottom:0">Isınma sorularından gerçek anlara uzanan sohbet kartları.</p>
+  </div>
+
+  <div class="card soon">
+    <span class="badge">Yakında</span>
+    <div class="ctitle">Cesaret mi Gerçek mi</div>
+    <p class="cdesc" style="margin-bottom:0">Klasik formatın çiftlere özel, ev içi versiyonu.</p>
+  </div>
+
+  <footer>Yeni oyunlar zamanla eklenecek.</footer>
+</div>
+</body>
+</html>
