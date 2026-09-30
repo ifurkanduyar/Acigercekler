@@ -102,14 +102,59 @@ const db=getDatabase(initializeApp({
   appId:"1:724315046366:web:0c3bf4b39e3854c83edd4f"
 }));
 
-/* Tur 1: Düello soruları */
-const Q=[
+/* Tur 1: Soru havuzu (50 soru) — her oyunda rastgele 6'sı seçilir */
+let Q=[];
+const QP=[
 {q:"Sevgililer Günü hangi tarihte kutlanır?",o:["14 Şubat","14 Mart","1 Mayıs","14 Nisan"],c:0},
 {q:"Yunan mitolojisinde aşk ve güzellik tanrıçası kimdir?",o:["Athena","Hera","Afrodit","Artemis"],c:2},
 {q:"Romeo ve Juliet oyununun yazarı kimdir?",o:["Charles Dickens","William Shakespeare","Victor Hugo","Lev Tolstoy"],c:1},
 {q:"Aşk-ı Memnu romanının yazarı kimdir?",o:["Reşat Nuri Güntekin","Ahmet Hamdi Tanpınar","Yakup Kadri Karaosmanoğlu","Halit Ziya Uşaklıgil"],c:3},
 {q:"Taj Mahal hangi ülkededir?",o:["İran","Hindistan","Mısır","Pakistan"],c:1},
-{q:"Evliliğin 25. yıl dönümüne ne ad verilir?",o:["Gümüş düğün","Altın düğün","Bronz düğün","Elmas düğün"],c:0}
+{q:"Evliliğin 25. yıl dönümüne ne ad verilir?",o:["Gümüş düğün","Altın düğün","Bronz düğün","Elmas düğün"],c:0},
+{q:"Türkiye'nin başkenti neresidir?",o:["İstanbul","Ankara","İzmir","Bursa"],c:1},
+{q:"Dünyanın en büyük okyanusu hangisidir?",o:["Atlas","Hint","Pasifik","Arktik"],c:2},
+{q:"Mona Lisa tablosunu kim yapmıştır?",o:["Michelangelo","Leonardo da Vinci","Raphael","Picasso"],c:1},
+{q:"Yılın kaç ayı 31 gün çeker?",o:["6","7","8","5"],c:1},
+{q:"Eyfel Kulesi hangi şehirdedir?",o:["Roma","Londra","Paris","Berlin"],c:2},
+{q:"Suyun kimyasal formülü nedir?",o:["CO2","H2O","O2","NaCl"],c:1},
+{q:"Güneş Sistemi'nin en büyük gezegeni hangisidir?",o:["Satürn","Jüpiter","Neptün","Mars"],c:1},
+{q:"Çanakkale Deniz Zaferi hangi yıl kazanıldı?",o:["1914","1915","1918","1923"],c:1},
+{q:"Cumhuriyet hangi yıl ilan edildi?",o:["1919","1920","1923","1938"],c:2},
+{q:"Dünyada kaç kıta vardır?",o:["5","6","7","8"],c:2},
+{q:"Japonya'nın başkenti neresidir?",o:["Kyoto","Osaka","Tokyo","Seul"],c:2},
+{q:"Kızıl Gezegen olarak bilinen gezegen hangisidir?",o:["Venüs","Mars","Merkür","Jüpiter"],c:1},
+{q:"Bir satranç tahtasında kaç kare vardır?",o:["36","49","64","81"],c:2},
+{q:"Aşağıdakilerden hangisi memelidir?",o:["Penguen","Yunus","Köpekbalığı","Timsah"],c:1},
+{q:"İnce Memed romanının yazarı kimdir?",o:["Orhan Pamuk","Yaşar Kemal","Sabahattin Ali","Oğuz Atay"],c:1},
+{q:"Türkiye'nin en yüksek dağı hangisidir?",o:["Erciyes","Uludağ","Ağrı Dağı","Kaçkar"],c:2},
+{q:"Türkiye'nin en büyük gölü hangisidir?",o:["Tuz Gölü","Van Gölü","Eğirdir","Beyşehir"],c:1},
+{q:"Mimar Sinan'ın 'ustalık eseri' hangisidir?",o:["Süleymaniye","Selimiye","Sultanahmet","Ayasofya"],c:1},
+{q:"Pizza hangi ülkenin mutfağından gelir?",o:["Fransa","İspanya","İtalya","Yunanistan"],c:2},
+{q:"Sushi hangi ülkeyle özdeşleşmiştir?",o:["Çin","Japonya","Kore","Tayland"],c:1},
+{q:"Gökkuşağında kaç renk vardır?",o:["5","6","7","8"],c:2},
+{q:"Ay'a ilk ayak basan insan kimdir?",o:["Buzz Aldrin","Yuri Gagarin","Neil Armstrong","Michael Collins"],c:2},
+{q:"Van Gogh hangi ülkenin ressamıdır?",o:["Fransa","Belçika","Hollanda","İspanya"],c:2},
+{q:"Halkalarıyla ünlü gezegen hangisidir?",o:["Satürn","Mars","Venüs","Merkür"],c:0},
+{q:"Kapadokya hangi ilimizdedir?",o:["Kayseri","Nevşehir","Konya","Sivas"],c:1},
+{q:"Pamukkale travertenleri hangi ildedir?",o:["Muğla","Denizli","Antalya","Aydın"],c:1},
+{q:"Efes Antik Kenti hangi ildedir?",o:["İzmir","Manisa","Muğla","Çanakkale"],c:0},
+{q:"Orhan Pamuk hangi dalda Nobel ödülü almıştır?",o:["Barış","Edebiyat","Fizik","Kimya"],c:1},
+{q:"Aziz Sancar hangi dalda Nobel ödülü almıştır?",o:["Tıp","Kimya","Fizik","Edebiyat"],c:1},
+{q:"Yetişkin bir insanda kaç kemik vardır?",o:["106","206","306","256"],c:1},
+{q:"En hızlı kara hayvanı hangisidir?",o:["Aslan","At","Çita","Antilop"],c:2},
+{q:"En büyük kara hayvanı hangisidir?",o:["Zürafa","Gergedan","Su aygırı","Afrika fili"],c:3},
+{q:"Büyük Giza Piramitleri hangi ülkededir?",o:["Sudan","Libya","Mısır","Ürdün"],c:2},
+{q:"Titanik hangi yıl battı?",o:["1905","1912","1920","1898"],c:1},
+{q:"Kleopatra hangi ülkenin kraliçesiydi?",o:["Yunanistan","Roma","Mısır","Babil"],c:2},
+{q:"Aşağıdakilerden hangisi telli bir çalgıdır?",o:["Davul","Bağlama","Flüt","Zurna"],c:1},
+{q:"Baklava denince akla gelen şehir hangisidir?",o:["Bursa","Gaziantep","Konya","Edirne"],c:1},
+{q:"İskender kebabı hangi şehirle anılır?",o:["Adana","Bursa","Urfa","Kayseri"],c:1},
+{q:"ABD'nin başkenti neresidir?",o:["New York","Washington D.C.","Los Angeles","Chicago"],c:1},
+{q:"Özgürlük Heykeli hangi şehirdedir?",o:["New York","Boston","Miami","Chicago"],c:0},
+{q:"Altının kimyasal sembolü nedir?",o:["Ag","Au","Fe","Gd"],c:1},
+{q:"Futbolda bir takım sahada kaç oyuncuyla yer alır?",o:["9","10","11","12"],c:2},
+{q:"2022 Dünya Kupası'nı hangi ülke kazandı?",o:["Fransa","Arjantin","Brezilya","Hırvatistan"],c:1},
+{q:"Küçük Prens kitabının yazarı kimdir?",o:["Victor Hugo","Antoine de Saint-Exupéry","Jules Verne","Albert Camus"],c:1}
 ];
 /* Tur 2: Ne Kadar Tanıyorsun havuzu — her oyunda rastgele 6'sı (3+3) kullanılır */
 const Q2=[
@@ -142,7 +187,10 @@ const setMsg=t=>{$("msg").textContent=t};
 const myName=()=>($("pname").value.trim()||"Oyuncu").slice(0,16);
 const FAIL="Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.";
 const sref=c=>ref(db,"rooms/"+c+"/s");
-const norm=s=>{s.red=s.red||[];s.lk=s.lk||[0,0];s.sc=s.sc||[0,0];s.n=s.n||["",""];s.rdy=s.rdy||[0,0];s.r=s.r||1;return s};
+const norm=s=>{s.red=s.red||[];s.lk=s.lk||[0,0];s.sc=s.sc||[0,0];s.n=s.n||["",""];s.rdy=s.rdy||[0,0];s.r=s.r||1;
+s.qi=(s.qi&&s.qi.length)?s.qi:[0,1,2,3,4,5];Q=s.qi.map(i=>QP[i]);
+if(s.r2){const f=a=>[0,1,2].map(i=>a&&a[i]!==undefined?a[i]:null);s.r2.answers=f(s.r2.answers);s.r2.guesses=f(s.r2.guesses)}
+return s};
 const save=c=>{try{sessionStorage.setItem("ak",JSON.stringify({c,me}))}catch(e){}};
 const r2q=(s,i)=>{const base=s.r2.b===1?0:3;return Q2[s.r2.idx[base+i]]};
 
@@ -279,16 +327,6 @@ function render(){
     if(S.red.length&&fk!==lastFlash)flash();
     lastFlash=fk;
   }
-  else if(S.ph==="r2answer"&&me===S.r2.ansBy){
-    const q=r2q(S,S.r2.ai);showQC=true;qc=`${S.r2.ai+1}/3 · ${q.q}`;
-    q.o.forEach((t,i)=>{
-      const b=document.createElement("button");
-      b.className="opt";b.textContent=t;
-      b.onclick=()=>run(me,{k:"r2pick",ai:S.r2.ai,o:i});
-      box.appendChild(b);
-    });
-    chip="Eşin bu ekranı görmüyor, rahat seç.";
-  }
   else if(S.ph==="r2guess"){
     const q=r2q(S,S.r2.gi),g=S.r2.guesses[S.r2.gi],revealed=g!==null&&g!==undefined;
     showQC=true;qc=`${S.r2.gi+1}/3 · ${q.q}`;
@@ -323,7 +361,7 @@ function nq(s,q){s.ph="q";s.q=q;s.lk=[0,0];s.red=[];s.w=-1;s.lw=-1;s.rdy=[0,0]}
 function shuffled(n){const a=[...Array(n).keys()];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function startR2(s){s.r=2;s.ph="intro";s.l=0;s.rdy=[0,0];s.r2={idx:shuffled(Q2.length).slice(0,6),b:1,ansBy:0,gsBy:1,ai:0,gi:0,answers:[null,null,null],guesses:[null,null,null]}}
 function startBlok2(s){s.r2.b=2;s.r2.ansBy=1;s.r2.gsBy=0;s.r2.ai=0;s.r2.gi=0;s.r2.answers=[null,null,null];s.r2.guesses=[null,null,null];s.ph="r2answer"}
-function resetGame(s){s.sc=[0,0];s.r=1;s.ph="intro";s.l=0;s.q=0;s.lk=[0,0];s.red=[];s.w=-1;s.lw=-1;s.r2=null;s.rdy=[0,0]}
+function resetGame(s){s.sc=[0,0];s.r=1;s.ph="intro";s.l=0;s.q=0;s.lk=[0,0];s.red=[];s.w=-1;s.lw=-1;s.r2=null;s.rdy=[0,0];s.qi=shuffled(QP.length).slice(0,6)}
 function advance(s){
   if(s.ph==="intro"){
     if(s.l<2)s.l++;
@@ -344,7 +382,7 @@ function advance(s){
 function apply(s,i,a){
   if(a.k==="join"){
     if(s.ph!=="lobby")return false;
-    s.n[1]=a.name;s.ph="intro";s.r=1;s.l=0;s.rdy=[0,0];return true;
+    s.n[1]=a.name;s.ph="intro";s.r=1;s.l=0;s.rdy=[0,0];s.qi=shuffled(QP.length).slice(0,6);return true;
   }
   if(a.k==="pick"){
     if(s.ph!=="q"||a.q!==s.q||!Number.isInteger(a.o)||a.o<0||a.o>3||s.lk[i]||s.red.includes(a.o))return false;
@@ -411,7 +449,7 @@ $("mk").onclick=async()=>{
     }
     if(!ok)return setMsg("Oda kodu üretilemedi, tekrar dene.");
     me=0;
-    await set(sref(c),{ph:"lobby",l:0,q:0,r:1,sc:[0,0],lk:[0,0],w:-1,lw:-1,rdy:[0,0],n:[myName(),""]});
+    await set(sref(c),{ph:"lobby",l:0,q:0,r:1,sc:[0,0],lk:[0,0],w:-1,lw:-1,rdy:[0,0],n:[myName(),""],qi:shuffled(QP.length).slice(0,6)});
     save(c);listen(c);setMsg("");
   }catch(e){setMsg(FAIL)}
 };
@@ -446,4 +484,3 @@ try{
 </script>
 </body>
 </html>
-
