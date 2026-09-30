@@ -379,4 +379,71 @@ function run(i,a){
   return runTransaction(sref(code),cur=>{
     if(cur===null)return cur;
     const s=norm(JSON.parse(JSON.stringify(cur)));
-    if(!apply(s,i,a))ret
+    if(!apply(s,i,a))return;
+    return s;
+  }).catch(()=>null);
+}
+
+function listen(c){
+  if(unsub)unsub();
+  code=c;lastKey="";
+  unsub=onValue(sref(c),snap=>{
+    const v=snap.val();
+    S=v?norm(v):null;
+    render();
+  });
+}
+function leave(){
+  if(unsub)unsub();
+  unsub=null;S=null;code=null;lastKey="";
+  try{sessionStorage.removeItem("ak");speechSynthesis.cancel();$("voice").pause();$("bgm").pause()}catch(e){}
+  show("home");
+}
+
+$("mk").onclick=async()=>{
+  prime();setMsg("Bağlanılıyor…");
+  try{
+    const al="abcdefghjkmnpqrstuvwxyz23456789";
+    let c="",ok=false;
+    for(let t=0;t<5&&!ok;t++){
+      c="";for(let i=0;i<4;i++)c+=al[Math.floor(Math.random()*al.length)];
+      ok=!(await get(sref(c))).exists();
+    }
+    if(!ok)return setMsg("Oda kodu üretilemedi, tekrar dene.");
+    me=0;
+    await set(sref(c),{ph:"lobby",l:0,q:0,r:1,sc:[0,0],lk:[0,0],w:-1,lw:-1,rdy:[0,0],n:[myName(),""]});
+    save(c);listen(c);setMsg("");
+  }catch(e){setMsg(FAIL)}
+};
+$("jn").onclick=async()=>{
+  prime();
+  const c=$("cd").value.trim().toLowerCase();
+  if(!/^[a-z0-9]{4}$/.test(c))return setMsg("4 haneli oda kodunu yaz.");
+  setMsg("Bağlanılıyor…");
+  try{
+    const sn=await get(sref(c));
+    if(!sn.exists())return setMsg("Oda bulunamadı. Kodu kontrol et.");
+    if(norm(sn.val()).ph!=="lobby")return setMsg("Bu odada oyun zaten başlamış.");
+    me=1;listen(c);
+    const r=await run(1,{k:"join",name:myName()});
+    if(!r||!r.committed){leave();return setMsg("Odaya girilemedi. Kodu kontrol edip tekrar dene.")}
+    save(c);setMsg("");
+  }catch(e){leave();setMsg(FAIL)}
+};
+$("nx").onclick=()=>{if(S)run(me,{k:"next"})};
+$("exit").onclick=leave;
+$("exit2").onclick=leave;
+$("mute").onclick=()=>{
+  muted=!muted;$("mute").textContent=muted?"🔇":"🔊";
+  if(muted){try{speechSynthesis.cancel()}catch(e){}try{$("voice").pause()}catch(e){}try{$("bgm").pause()}catch(e){}}
+  else render();
+};
+
+try{
+  const r=JSON.parse(sessionStorage.getItem("ak")||"null");
+  if(r&&r.c){me=r.me;listen(r.c)}
+}catch(e){}
+</script>
+</body>
+</html>
+
