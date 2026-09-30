@@ -21,6 +21,7 @@ label{font-size:13px;color:var(--mut);display:block;margin-bottom:6px}
 input{width:100%;background:var(--s2);border:1px solid var(--line);color:var(--text);font:16px 'Karla',sans-serif;padding:13px 14px;border-radius:12px;margin-bottom:14px}
 button{font:700 15px 'Karla',sans-serif;border:none;border-radius:12px;padding:15px 18px;cursor:pointer}
 .pri{background:var(--gold);color:#241308;width:100%}
+.pri:disabled{opacity:.5;cursor:default}
 .ghost{background:transparent;color:var(--text);border:1px solid var(--line);width:100%}
 .or{text-align:center;color:var(--mut);font-size:13px;margin:14px 0}
 .note{color:var(--mut);font-size:13px;line-height:1.5;margin-top:12px}
@@ -30,11 +31,14 @@ button{font:700 15px 'Karla',sans-serif;border:none;border-radius:12px;padding:1
 .top span:nth-child(1),.top span:nth-child(2){flex:1}
 .top span:nth-child(2){text-align:right}
 .ib{background:transparent;color:var(--text);padding:4px 8px;font-size:18px}
-#stage{height:210px;display:flex;justify-content:center;align-items:flex-end;margin-top:2px;overflow:hidden}
+#stage{height:190px;display:flex;justify-content:center;align-items:flex-end;margin-top:2px;overflow:hidden}
 #hostImg{height:100%;width:auto;object-fit:contain;border-radius:18px}
 @media (prefers-reduced-motion:no-preference){#hostImg.pop{animation:popIn .35s ease}@keyframes popIn{from{opacity:0;transform:scale(.95) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}}
 #bubble{background:var(--s);border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:12px 14px;min-height:62px;font-family:'Fraunces',serif;font-size:17px;line-height:1.4;margin:6px 0 10px}
-#qc{font-family:'Fraunces',serif;font-size:19px;line-height:1.35;margin:0 0 10px;color:var(--gold)}
+.pulse{display:none;gap:10px;justify-content:center;margin:4px 0 14px}
+.pulse span{width:10px;height:10px;border-radius:50%;background:var(--gold)}
+@media (prefers-reduced-motion:no-preference){.pulse span{animation:pl 1.2s ease-in-out infinite}.pulse span:nth-child(2){animation-delay:.2s}.pulse span:nth-child(3){animation-delay:.4s}@keyframes pl{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.35)}}}
+#qc{font-family:'Fraunces',serif;font-size:19px;line-height:1.35;margin:0 0 10px;color:var(--gold);display:none}
 #chip{color:var(--mut);font-size:13px;min-height:18px;margin-bottom:8px}
 #opts{display:flex;flex-direction:column;gap:9px;margin-bottom:12px}
 .opt{background:var(--s2);border:1px solid var(--line);color:var(--text);text-align:left;font-size:16px;padding:14px}
@@ -49,10 +53,11 @@ button{font:700 15px 'Karla',sans-serif;border:none;border-radius:12px;padding:1
 <body>
 <div id="flash"></div>
 <audio id="voice" preload="none"></audio>
+<audio id="bgm" preload="none" loop></audio>
 <div id="app">
   <section class="scr on" id="home">
     <h1>Aramızda Kalsın: Düello</h1>
-    <p class="sub">İki telefondan, sunucu eşliğinde bilgi yarışması. İlk doğru bilen puanı alır.</p>
+    <p class="sub">İki telefondan, sunucu eşliğinde bilgi yarışması. 2 turluk bir oyun.</p>
     <label for="pname">Adın</label>
     <input id="pname" maxlength="16" placeholder="Adın">
     <button class="pri" id="mk">Oda Oluştur</button>
@@ -75,6 +80,7 @@ button{font:700 15px 'Karla',sans-serif;border:none;border-radius:12px;padding:1
     <div class="top"><span id="sc0"></span><span id="sc1"></span><button class="ib" id="mute" aria-label="Sesi aç/kapat">🔊</button><button class="ib" id="exit" aria-label="Çık">✕</button></div>
     <div id="stage"><img id="hostImg" src="wave.png" alt="Sunucu"></div>
     <div id="bubble"><span id="txt"></span></div>
+    <div class="pulse" id="pulse"><span></span><span></span><span></span></div>
     <div id="qc"></div>
     <div id="chip"></div>
     <div id="opts"></div>
@@ -96,6 +102,7 @@ const db=getDatabase(initializeApp({
   appId:"1:724315046366:web:0c3bf4b39e3854c83edd4f"
 }));
 
+/* Tur 1: Düello soruları */
 const Q=[
 {q:"Sevgililer Günü hangi tarihte kutlanır?",o:["14 Şubat","14 Mart","1 Mayıs","14 Nisan"],c:0},
 {q:"Yunan mitolojisinde aşk ve güzellik tanrıçası kimdir?",o:["Athena","Hera","Afrodit","Artemis"],c:2},
@@ -104,6 +111,30 @@ const Q=[
 {q:"Taj Mahal hangi ülkededir?",o:["İran","Hindistan","Mısır","Pakistan"],c:1},
 {q:"Evliliğin 25. yıl dönümüne ne ad verilir?",o:["Gümüş düğün","Altın düğün","Bronz düğün","Elmas düğün"],c:0}
 ];
+/* Tur 2: Ne Kadar Tanıyorsun havuzu — her oyunda rastgele 6'sı (3+3) kullanılır */
+const Q2=[
+{q:"Hangi tatili tercih edersin?",o:["Deniz kenarı","Dağ / doğa","Şehir turu","Evde dinlenmek"]},
+{q:"En sevdiğin mevsim hangisi?",o:["İlkbahar","Yaz","Sonbahar","Kış"]},
+{q:"Hafta sonunu nasıl geçirmeyi seversin?",o:["Dışarıda gezerek","Evde film izleyerek","Arkadaşlarla buluşarak","Spor yaparak"]},
+{q:"Hangi mutfağı daha çok seversin?",o:["Türk mutfağı","İtalyan mutfağı","Uzak Doğu mutfağı","Fast food"]},
+{q:"Bir hediye alırken neye önem verirsin?",o:["Anlamına","Kullanışlılığına","Şaşırtıcı olmasına","Emeğine"]},
+{q:"Hangi film türünü tercih edersin?",o:["Komedi","Aksiyon","Romantik","Gerilim"]},
+{q:"Sabah mı gece mi daha üretkensin?",o:["Sabah","Öğlen","Akşam","Gece"]},
+{q:"Bir tartışmada nasıl davranırsın?",o:["Hemen konuşurum","Biraz zaman isterim","Yazarak anlatırım","Susup düşünürüm"]},
+{q:"En sevdiğin tatlı hangisi?",o:["Çikolatalı","Meyveli","Sütlü","Hamur işi"]},
+{q:"İdeal bir akşam yemeği nerede olur?",o:["Evde","Şık bir restoranda","Sokak lezzetlerinde","Deniz kenarında"]},
+{q:"Hangi rengi daha çok seversin?",o:["Mavi","Kırmızı","Yeşil","Siyah / Beyaz"]},
+{q:"Bir sürpriz planlarken neyi tercih edersin?",o:["Sürpriz gezi","Özel yemek","El yapımı hediye","Birlikte vakit geçirmek"]},
+{q:"Stresliyken ne yaparsın?",o:["Yürüyüşe çıkarım","Müzik dinlerim","Uyurum","Biriyle konuşurum"]},
+{q:"En sevdiğin müzik türü hangisi?",o:["Pop","Rock","Arabesk / Türk sanat müziği","Elektronik"]},
+{q:"İdeal tatil arkadaşı kimdir?",o:["Sadece eşim","Aile","Arkadaş grubu","Yalnız gitmek"]},
+{q:"Hangi spor daha ilgini çeker?",o:["Futbol","Yüzme","Yürüyüş / doğa","İzlemeyi tercih etmem"]},
+{q:"Bir günün en güzel anı ne zaman?",o:["Sabah kahvesi","Öğle molası","Akşam yemeği","Yatmadan önceki sohbet"]},
+{q:"Hangi hayvanı beslemek isterdin?",o:["Kedi","Köpek","Kuş","Hiçbiri"]},
+{q:"Alışverişte nasılsındır?",o:["Hızlı karar veririm","Uzun uzun bakarım","Listeyle giderim","Plansız giderim"]},
+{q:"Bir kutlamada neyi tercih edersin?",o:["Kalabalık parti","Samimi küçük buluşma","Sessiz baş başa an","Sürpriz organizasyon"]}
+];
+
 const $=id=>document.getElementById(id);
 let S=null,code=null,me=0,lastKey="",lastFlash="",muted=false,typer=null,unsub=null;
 const show=id=>document.querySelectorAll(".scr").forEach(s=>s.classList.toggle("on",s.id===id));
@@ -111,24 +142,72 @@ const setMsg=t=>{$("msg").textContent=t};
 const myName=()=>($("pname").value.trim()||"Oyuncu").slice(0,16);
 const FAIL="Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.";
 const sref=c=>ref(db,"rooms/"+c+"/s");
-const norm=s=>{s.red=s.red||[];s.lk=s.lk||[0,0];s.sc=s.sc||[0,0];s.n=s.n||["",""];return s};
+const norm=s=>{s.red=s.red||[];s.lk=s.lk||[0,0];s.sc=s.sc||[0,0];s.n=s.n||["",""];s.rdy=s.rdy||[0,0];s.r=s.r||1;return s};
 const save=c=>{try{sessionStorage.setItem("ak",JSON.stringify({c,me}))}catch(e){}};
+const r2q=(s,i)=>{const base=s.r2.b===1?0:3;return Q2[s.r2.idx[base+i]]};
 
 function line(){
   const N=S.n;
-  if(S.ph==="intro")return [
-    {t:`Merhaba ${N[0]} ve ${N[1]}! Aramızda Kalsın düellosuna hoş geldiniz.`,p:"wave",a:"welcome.mp3"},
-    {t:"Kural basit: soruyu ilk doğru bilen puanı alır. Yanlış şıkka basarsanız ekran kızarır ve söz rakibe geçer.",p:"point",a:"rules.mp3"},
-    {t:"Parmaklar hazırsa ilk soruya geçiyoruz!",p:"cheer",a:"start.mp3"}][S.l];
+  if(S.ph==="intro"){
+    if(S.r===1)return [
+      {t:`Merhaba ${N[0]} ve ${N[1]}! Aramızda Kalsın düellosuna hoş geldiniz.`,p:"wave",a:"welcome.mp3"},
+      {t:"Kural basit: soruyu ilk doğru bilen puanı alır. Yanlış şıkka basarsanız ekran kızarır ve söz rakibe geçer.",p:"point",a:"rules.mp3"},
+      {t:"Parmaklar hazırsa ilk soruya geçiyoruz!",p:"cheer",a:"start.mp3"}][S.l];
+    return [
+      {t:`2. Tur: Ne Kadar Tanıyorsun! Önce ${N[0]} kendi hakkında 3 soru cevaplayacak, sonra ${N[1]} bu cevapları bilmeye çalışacak.`,p:"point"},
+      {t:"Sonra sıra değişecek, roller yer değiştirecek.",p:"think"},
+      {t:"Her doğru tahmin 2 puan kazandırır. Hazırsanız başlıyoruz!",p:"cheer"}][S.l];
+  }
   if(S.ph==="q"){
-    if(S.lw>=0)return {t:`Yanlış! Cevap hakkı ${N[1-S.lw]} tarafına geçti.`,p:"oops",a:"wrong.mp3"};
+    if(S.lw>=0){
+      if(me===S.lw)return {t:`Yanlış cevap! Sıra ${N[1-S.lw]}'de.`,p:"oops",a:"wrong.mp3"};
+      return {t:`${N[S.lw]} yanlış bildi. Şimdi sırada sen varsın!`,p:"point",a:"wrong_other.mp3"};
+    }
     return {t:`Soru ${S.q+1}!`,s:Q[S.q].q,p:S.q%2?"think":"point"};
   }
-  if(S.ph==="rev")return S.w>=0?{t:`Doğru! Puanı ${N[S.w]} aldı.`,p:"cheer",a:"correct.mp3"}:{t:`İkiniz de bilemediniz. Doğru cevap: ${Q[S.q].o[Q[S.q].c]}.`,p:"sad",a:"nobody.mp3"};
-  if(S.ph==="end"){const [x,y]=S.sc;return x===y?{t:"Berabere! İkiniz de harikasınız.",p:"wave",a:"tie.mp3"}:{t:`Kazanan ${N[x>y?0:1]}! Tebrikler.`,p:"cheer",a:"win.mp3"};}
+  if(S.ph==="rev"){
+    if(S.w>=0){
+      if(me===S.w)return {t:`Doğru bildin, ${N[me]}! Tebrikler.`,p:"cheer",a:"correct.mp3"};
+      return {t:`${N[S.w]} doğru bildi. Bir dahaki soruda daha hızlı olmalısın!`,p:"sad",a:"correct_other.mp3"};
+    }
+    return {t:`İkiniz de bilemediniz. Doğru cevap: ${Q[S.q].o[Q[S.q].c]}.`,p:"sad",a:"nobody.mp3"};
+  }
+  if(S.ph==="r2answer"){
+    if(me===S.r2.ansBy){
+      const q=r2q(S,S.r2.ai);
+      const intro=S.r2.ai===0?`Şimdi sırada sen varsın, ${N[me]}! `:"";
+      return {t:`${intro}Kendi cevabını seç, eşin bu ekranı görmüyor.`,s:q.q,p:"think"};
+    }
+    return {t:`${N[S.r2.ansBy]} kendi hakkında sorulara cevap veriyor. Az sonra sıra sende!`,s:"Eşin cevap veriyor, biraz bekle.",p:"wave"};
+  }
+  if(S.ph==="r2guess"){
+    const g=S.r2.guesses[S.r2.gi];
+    if(g===null||g===undefined){
+      const q=r2q(S,S.r2.gi);
+      return {t:me===S.r2.gsBy?"Sence hangisini seçti? Tahmin et!":`${N[S.r2.gsBy]} tahmin ediyor, izle!`,s:q.q,p:"think"};
+    }
+    const ok=g===S.r2.answers[S.r2.gi];
+    return ok?{t:`${N[S.r2.gsBy]} doğru bildi! +2 puan.`,p:"cheer"}:{t:`${N[S.r2.gsBy]} bilemedi. Doğru cevap: "${r2q(S,S.r2.gi).o[S.r2.answers[S.r2.gi]]}".`,p:"sad"};
+  }
+  if(S.ph==="end"){
+    const [x,y]=S.sc;
+    if(x===y)return {t:"Berabere! İkiniz de harikasınız.",p:"wave",a:"tie.mp3"};
+    const wi=x>y?0:1;
+    if(me===wi)return {t:`Kazandın, ${N[me]}! Tebrikler.`,p:"cheer",a:"win.mp3"};
+    return {t:`${N[wi]} kazandı. Bir dahaki sefere daha hızlısın!`,p:"sad",a:"win_other.mp3"};
+  }
   return {t:"",p:"point"};
 }
 
+function speakTTS(text){
+  if(!("speechSynthesis" in window)||!text)return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);u.lang="tr-TR";
+    const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith("tr"));
+    if(v)u.voice=v;speechSynthesis.speak(u);
+  }catch(e){}
+}
 function say(L){
   clearInterval(typer);
   const el=$("txt");el.textContent="";let i=0;
@@ -136,77 +215,161 @@ function say(L){
   if(muted)return;
   const voice=$("voice");
   if(L.a){
-    try{voice.pause();voice.currentTime=0;voice.src=L.a;voice.play().catch(()=>{})}catch(e){}
+    try{
+      voice.onerror=()=>speakTTS(L.s||L.t);
+      voice.pause();voice.currentTime=0;voice.src=L.a;
+      voice.play().catch(()=>speakTTS(L.s||L.t));
+    }catch(e){speakTTS(L.s||L.t)}
     return;
   }
   try{voice.pause()}catch(e){}
-  if(!("speechSynthesis" in window)||!(L.s||L.t))return;
-  try{
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(L.s||L.t);u.lang="tr-TR";
-    const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith("tr"));
-    if(v)u.voice=v;speechSynthesis.speak(u);
-  }catch(e){}
+  speakTTS(L.s||L.t);
 }
 function prime(){
   try{speechSynthesis.speak(new SpeechSynthesisUtterance(""))}catch(e){}
   try{const v=$("voice");v.play().then(()=>v.pause()).catch(()=>{})}catch(e){}
 }
 function flash(){const f=$("flash");f.classList.remove("go");void f.offsetWidth;f.classList.add("go")}
+function toggleBgm(on){
+  const b=$("bgm");
+  if(on){if(b.paused){b.src="waiting.mp3";b.play().catch(()=>{})}}
+  else if(!b.paused)b.pause();
+}
+function nextLabel(){
+  if(S.ph==="intro")return S.l<2?"Devam":(S.r===1?"Başla":"Devam");
+  if(S.ph==="rev")return S.q<Q.length-1?"Sıradaki soru":"2. Tura Geç";
+  if(S.ph==="r2guess")return S.r2.gi<2?"Sıradaki soru":(S.r2.b===1?"2. Bölüme Geç":"Sonucu Gör");
+  if(S.ph==="end")return "Yeniden Oyna";
+  return "Devam";
+}
 
 function render(){
   if(!S){show("home");return}
   if(S.ph==="lobby"){show("lobby");$("code").textContent=(code||"").toUpperCase();return}
   show("game");
-  const L=line(),key=[S.ph,S.l,S.q,S.lw,S.w].join();
+  const L=line();
+  const key=[S.ph,S.r,S.l,S.q,S.lw,S.w,S.r2&&S.r2.b,S.r2&&S.r2.ai,S.r2&&S.r2.gi,S.r2&&S.r2.guesses&&S.r2.guesses[S.r2.gi]].join();
   if(key!==lastKey){
     lastKey=key;
-    const img=$("hostImg");
-    img.src=L.p+".png";
-    img.classList.remove("pop");void img.offsetWidth;img.classList.add("pop");
+    const img=$("hostImg");img.src=L.p+".png";img.classList.remove("pop");void img.offsetWidth;img.classList.add("pop");
     say(L);
   }
   $("sc0").textContent=`${S.n[0]}${me===0?" (sen)":""}: ${S.sc[0]}`;
   $("sc1").textContent=`${S.n[1]}${me===1?" (sen)":""}: ${S.sc[1]}`;
-  const inQ=S.ph==="q"||S.ph==="rev",q=Q[S.q];
-  $("qc").style.display=inQ?"block":"none";
-  $("qc").textContent=`${S.q+1}/${Q.length} · ${q.q}`;
+
+  const waitingR2=S.ph==="r2answer"&&me!==S.r2.ansBy;
+  $("pulse").style.display=waitingR2?"flex":"none";
+  toggleBgm(waitingR2&&!muted);
+
   const box=$("opts");box.replaceChildren();
-  if(inQ)q.o.forEach((t,i)=>{
-    const b=document.createElement("button");
-    b.className="opt"+(S.red.includes(i)?" red":"")+(S.ph==="rev"&&i===q.c?" green":"");
-    b.textContent=t;
-    b.disabled=S.ph!=="q"||!!S.lk[me]||S.red.includes(i);
-    b.onclick=()=>run(me,{k:"pick",q:S.q,o:i});
-    box.appendChild(b);
-  });
-  $("chip").textContent=S.ph==="q"?(S.lk[me]?"Yanlış bildin, söz rakipte":S.lk[1-me]?"Rakip yanlış bildi, söz sende!":"İlk basan kazanır!"):S.ph==="end"?"Oyun bitti":"";
-  const fk=S.q+":"+S.red.length;
-  if(S.red.length&&fk!==lastFlash)flash();
-  lastFlash=fk;
-  $("nx").style.display=S.ph==="q"?"none":"block";
-  $("nx").textContent=S.ph==="intro"?(S.l<2?"Devam":"Başla"):S.ph==="rev"?(S.q<Q.length-1?"Sıradaki soru":"Sonucu gör"):"Yeniden oyna";
+  let qc="",chip="",showQC=false;
+
+  if(S.ph==="q"){
+    const q=Q[S.q];showQC=true;qc=`${S.q+1}/${Q.length} · ${q.q}`;
+    q.o.forEach((t,i)=>{
+      const b=document.createElement("button");
+      b.className="opt"+(S.red.includes(i)?" red":"");
+      b.textContent=t;
+      b.disabled=!!S.lk[me]||S.red.includes(i);
+      b.onclick=()=>run(me,{k:"pick",q:S.q,o:i});
+      box.appendChild(b);
+    });
+    chip=S.lk[me]?"Yanlış bildin, söz rakipte":S.lk[1-me]?"Rakip yanlış bildi, söz sende!":"İlk basan kazanır!";
+    const fk="q:"+S.q+":"+S.red.length;
+    if(S.red.length&&fk!==lastFlash)flash();
+    lastFlash=fk;
+  }
+  else if(S.ph==="r2answer"&&me===S.r2.ansBy){
+    const q=r2q(S,S.r2.ai);showQC=true;qc=`${S.r2.ai+1}/3 · ${q.q}`;
+    q.o.forEach((t,i)=>{
+      const b=document.createElement("button");
+      b.className="opt";b.textContent=t;
+      b.onclick=()=>run(me,{k:"r2pick",ai:S.r2.ai,o:i});
+      box.appendChild(b);
+    });
+    chip="Eşin bu ekranı görmüyor, rahat seç.";
+  }
+  else if(S.ph==="r2guess"){
+    const q=r2q(S,S.r2.gi),g=S.r2.guesses[S.r2.gi],revealed=g!==null&&g!==undefined;
+    showQC=true;qc=`${S.r2.gi+1}/3 · ${q.q}`;
+    q.o.forEach((t,i)=>{
+      const b=document.createElement("button");
+      b.className="opt"+(revealed&&i===S.r2.answers[S.r2.gi]?" green":"")+(revealed&&i===g&&g!==S.r2.answers[S.r2.gi]?" red":"");
+      b.textContent=t;
+      b.disabled=revealed||me!==S.r2.gsBy;
+      b.onclick=()=>run(me,{k:"r2guess",gi:S.r2.gi,o:i});
+      box.appendChild(b);
+    });
+    chip=revealed?"":(me===S.r2.gsBy?"Sence hangisini seçti?":`${S.n[S.r2.gsBy]} tahmin ediyor…`);
+    const fk="rg:"+S.r2.b+":"+S.r2.gi+":"+(revealed?1:0);
+    if(revealed&&g!==S.r2.answers[S.r2.gi]&&fk!==lastFlash)flash();
+    lastFlash=fk;
+  }
+
+  $("qc").style.display=showQC?"block":"none";
+  $("qc").textContent=qc;
+  $("chip").textContent=chip;
+
+  const gateReady=["intro","rev","end"].includes(S.ph)||(S.ph==="r2guess"&&S.r2.guesses[S.r2.gi]!==null&&S.r2.guesses[S.r2.gi]!==undefined);
+  $("nx").style.display=gateReady?"block":"none";
+  if(gateReady){
+    if(S.rdy&&S.rdy[me]){$("nx").disabled=true;$("nx").textContent="Diğer oyuncu bekleniyor…"}
+    else{$("nx").disabled=false;$("nx").textContent=nextLabel()}
+  }
 }
 
-/* Hamleler sunucuda sırayla işlenir (transaction): ilk ulaşan hamle kazanır. */
-function nq(s,q){s.ph="q";s.q=q;s.lk=[0,0];s.red=[];s.w=-1;s.lw=-1}
+/* --- Durum geçişleri (her iki telefon da aynı kodu çalıştırır) --- */
+function nq(s,q){s.ph="q";s.q=q;s.lk=[0,0];s.red=[];s.w=-1;s.lw=-1;s.rdy=[0,0]}
+function shuffled(n){const a=[...Array(n).keys()];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function startR2(s){s.r=2;s.ph="intro";s.l=0;s.rdy=[0,0];s.r2={idx:shuffled(Q2.length).slice(0,6),b:1,ansBy:0,gsBy:1,ai:0,gi:0,answers:[null,null,null],guesses:[null,null,null]}}
+function startBlok2(s){s.r2.b=2;s.r2.ansBy=1;s.r2.gsBy=0;s.r2.ai=0;s.r2.gi=0;s.r2.answers=[null,null,null];s.r2.guesses=[null,null,null];s.ph="r2answer"}
+function resetGame(s){s.sc=[0,0];s.r=1;s.ph="intro";s.l=0;s.q=0;s.lk=[0,0];s.red=[];s.w=-1;s.lw=-1;s.r2=null;s.rdy=[0,0]}
+function advance(s){
+  if(s.ph==="intro"){
+    if(s.l<2)s.l++;
+    else if(s.r===1)nq(s,0);
+    else s.ph="r2answer";
+  }else if(s.ph==="rev"){
+    if(s.q<Q.length-1)nq(s,s.q+1);
+    else startR2(s);
+  }else if(s.ph==="r2guess"){
+    if(s.r2.gi<2)s.r2.gi++;
+    else if(s.r2.b===1)startBlok2(s);
+    else s.ph="end";
+  }else if(s.ph==="end"){
+    resetGame(s);
+  }else return false;
+  return true;
+}
 function apply(s,i,a){
   if(a.k==="join"){
     if(s.ph!=="lobby")return false;
-    s.n[1]=a.name;s.ph="intro";s.l=0;return true;
-  }
-  if(a.k==="next"){
-    if(a.v!==s.v)return false;
-    if(s.ph==="intro"){if(s.l<2)s.l++;else nq(s,0)}
-    else if(s.ph==="rev"){if(s.q<Q.length-1)nq(s,s.q+1);else s.ph="end"}
-    else if(s.ph==="end"){s.sc=[0,0];nq(s,0)}
-    else return false;
-    return true;
+    s.n[1]=a.name;s.ph="intro";s.r=1;s.l=0;s.rdy=[0,0];return true;
   }
   if(a.k==="pick"){
     if(s.ph!=="q"||a.q!==s.q||!Number.isInteger(a.o)||a.o<0||a.o>3||s.lk[i]||s.red.includes(a.o))return false;
-    if(a.o===Q[s.q].c){s.sc[i]++;s.w=i;s.ph="rev"}
-    else{s.lk[i]=1;s.lw=i;s.red=[...s.red,a.o];if(s.lk[0]&&s.lk[1]){s.ph="rev";s.w=-1}}
+    if(a.o===Q[s.q].c){s.sc[i]++;s.w=i;s.ph="rev";s.rdy=[0,0]}
+    else{s.lk[i]=1;s.lw=i;s.red=[...s.red,a.o];if(s.lk[0]&&s.lk[1]){s.ph="rev";s.w=-1;s.rdy=[0,0]}}
+    return true;
+  }
+  if(a.k==="r2pick"){
+    if(s.ph!=="r2answer"||i!==s.r2.ansBy||a.ai!==s.r2.ai||!Number.isInteger(a.o)||a.o<0||a.o>3||s.r2.answers[a.ai]!==null)return false;
+    s.r2.answers[a.ai]=a.o;s.r2.ai++;
+    if(s.r2.ai>=3){s.ph="r2guess";s.r2.gi=0;s.r2.guesses=[null,null,null];s.rdy=[0,0]}
+    return true;
+  }
+  if(a.k==="r2guess"){
+    if(s.ph!=="r2guess"||i!==s.r2.gsBy||a.gi!==s.r2.gi||!Number.isInteger(a.o)||a.o<0||a.o>3||s.r2.guesses[a.gi]!==null)return false;
+    s.r2.guesses[a.gi]=a.o;
+    if(a.o===s.r2.answers[a.gi])s.sc[i]+=2;
+    s.rdy=[0,0];
+    return true;
+  }
+  if(a.k==="next"){
+    s.rdy=s.rdy||[0,0];
+    if(s.rdy[i])return false;
+    s.rdy[i]=1;
+    if(s.rdy[0]&&s.rdy[1]){s.rdy=[0,0];return advance(s)}
     return true;
   }
   return false;
@@ -216,70 +379,4 @@ function run(i,a){
   return runTransaction(sref(code),cur=>{
     if(cur===null)return cur;
     const s=norm(JSON.parse(JSON.stringify(cur)));
-    if(!apply(s,i,a))return;
-    s.v=(s.v||0)+1;
-    return s;
-  }).catch(()=>null);
-}
-
-function listen(c){
-  if(unsub)unsub();
-  code=c;lastKey="";
-  unsub=onValue(sref(c),snap=>{
-    const v=snap.val();
-    S=v?norm(v):null;
-    render();
-  });
-}
-function leave(){
-  if(unsub)unsub();
-  unsub=null;S=null;code=null;lastKey="";
-  try{sessionStorage.removeItem("ak");speechSynthesis.cancel();$("voice").pause()}catch(e){}
-  show("home");
-}
-
-$("mk").onclick=async()=>{
-  prime();setMsg("Bağlanılıyor…");
-  try{
-    const al="abcdefghjkmnpqrstuvwxyz23456789";
-    let c="",ok=false;
-    for(let t=0;t<5&&!ok;t++){
-      c="";for(let i=0;i<4;i++)c+=al[Math.floor(Math.random()*al.length)];
-      ok=!(await get(sref(c))).exists();
-    }
-    if(!ok)return setMsg("Oda kodu üretilemedi, tekrar dene.");
-    me=0;
-    await set(sref(c),{ph:"lobby",l:0,q:0,sc:[0,0],lk:[0,0],w:-1,lw:-1,v:0,n:[myName(),""]});
-    save(c);listen(c);setMsg("");
-  }catch(e){setMsg(FAIL)}
-};
-$("jn").onclick=async()=>{
-  prime();
-  const c=$("cd").value.trim().toLowerCase();
-  if(!/^[a-z0-9]{4}$/.test(c))return setMsg("4 haneli oda kodunu yaz.");
-  setMsg("Bağlanılıyor…");
-  try{
-    const sn=await get(sref(c));
-    if(!sn.exists())return setMsg("Oda bulunamadı. Kodu kontrol et.");
-    if(norm(sn.val()).ph!=="lobby")return setMsg("Bu odada oyun zaten başlamış.");
-    me=1;listen(c);
-    const r=await run(1,{k:"join",name:myName()});
-    if(!r||!r.committed){leave();return setMsg("Odaya girilemedi. Kodu kontrol edip tekrar dene.")}
-    save(c);setMsg("");
-  }catch(e){leave();setMsg(FAIL)}
-};
-$("nx").onclick=()=>{if(S)run(me,{k:"next",v:S.v})};
-$("exit").onclick=leave;
-$("exit2").onclick=leave;
-$("mute").onclick=()=>{
-  muted=!muted;$("mute").textContent=muted?"🔇":"🔊";
-  if(muted){try{speechSynthesis.cancel()}catch(e){}try{$("voice").pause()}catch(e){}}
-};
-
-try{
-  const r=JSON.parse(sessionStorage.getItem("ak")||"null");
-  if(r&&r.c){me=r.me;listen(r.c)}
-}catch(e){}
-</script>
-</body>
-</html>
+    if(!apply(s,i,a))ret
