@@ -30,9 +30,9 @@ button{font:700 15px 'Karla',sans-serif;border:none;border-radius:12px;padding:1
 .top span:nth-child(1),.top span:nth-child(2){flex:1}
 .top span:nth-child(2){text-align:right}
 .ib{background:transparent;color:var(--text);padding:4px 8px;font-size:18px}
-#stage{height:150px;display:flex;justify-content:center;margin-top:4px}
-#stage svg{height:100%}
-@media (prefers-reduced-motion:no-preference){.bob{animation:bob 2.4s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-4px)}}}
+#stage{height:210px;display:flex;justify-content:center;align-items:flex-end;margin-top:2px;overflow:hidden}
+#hostImg{height:100%;width:auto;object-fit:contain;border-radius:18px}
+@media (prefers-reduced-motion:no-preference){#hostImg.pop{animation:popIn .35s ease}@keyframes popIn{from{opacity:0;transform:scale(.95) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}}
 #bubble{background:var(--s);border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:12px 14px;min-height:62px;font-family:'Fraunces',serif;font-size:17px;line-height:1.4;margin:6px 0 10px}
 #qc{font-family:'Fraunces',serif;font-size:19px;line-height:1.35;margin:0 0 10px;color:var(--gold)}
 #chip{color:var(--mut);font-size:13px;min-height:18px;margin-bottom:8px}
@@ -48,6 +48,7 @@ button{font:700 15px 'Karla',sans-serif;border:none;border-radius:12px;padding:1
 </head>
 <body>
 <div id="flash"></div>
+<audio id="voice" preload="none"></audio>
 <div id="app">
   <section class="scr on" id="home">
     <h1>Aramızda Kalsın: Düello</h1>
@@ -72,7 +73,7 @@ button{font:700 15px 'Karla',sans-serif;border:none;border-radius:12px;padding:1
 
   <section class="scr" id="game">
     <div class="top"><span id="sc0"></span><span id="sc1"></span><button class="ib" id="mute" aria-label="Sesi aç/kapat">🔊</button><button class="ib" id="exit" aria-label="Çık">✕</button></div>
-    <div id="stage"></div>
+    <div id="stage"><img id="hostImg" src="wave.png" alt="Sunucu"></div>
     <div id="bubble"><span id="txt"></span></div>
     <div id="qc"></div>
     <div id="chip"></div>
@@ -103,14 +104,6 @@ const Q=[
 {q:"Taj Mahal hangi ülkededir?",o:["İran","Hindistan","Mısır","Pakistan"],c:1},
 {q:"Evliliğin 25. yıl dönümüne ne ad verilir?",o:["Gümüş düğün","Altın düğün","Bronz düğün","Elmas düğün"],c:0}
 ];
-const P={
-wave:{L:[40,150,42,180],R:[140,112,138,64],m:"M68 92Q80 104 92 92",b:"M62 68L74 66M86 66L98 68"},
-point:{L:[40,150,42,180],R:[138,138,152,152],m:"M70 94Q80 101 90 94",b:"M62 70L74 70M86 70L98 70"},
-think:{L:[40,150,42,180],R:[128,122,94,100],m:"M72 97L88 97",b:"M62 70L74 70M86 64L98 68"},
-cheer:{L:[22,108,26,58],R:[138,108,134,58],m:"M64 90Q80 114 96 90Z",f:"#7A2233",b:"M62 66L74 64M86 64L98 66"},
-oops:{L:[26,140,20,150],R:[134,140,140,150],m:"M68 99Q74 92 80 99Q86 106 92 99",b:"M62 66L74 71M86 71L98 66"},
-sad:{L:[40,150,42,180],R:[120,150,118,180],m:"M68 102Q80 90 92 102",b:"M62 68L74 72M86 72L98 68"}
-};
 const $=id=>document.getElementById(id);
 let S=null,code=null,me=0,lastKey="",lastFlash="",muted=false,typer=null,unsub=null;
 const show=id=>document.querySelectorAll(".scr").forEach(s=>s.classList.toggle("on",s.id===id));
@@ -121,24 +114,18 @@ const sref=c=>ref(db,"rooms/"+c+"/s");
 const norm=s=>{s.red=s.red||[];s.lk=s.lk||[0,0];s.sc=s.sc||[0,0];s.n=s.n||["",""];return s};
 const save=c=>{try{sessionStorage.setItem("ak",JSON.stringify({c,me}))}catch(e){}};
 
-function svg(k){
-  const p=P[k]||P.point,sk="#F0C8A0";
-  const arm=(s,a)=>`<path d="M${s} Q${a[0]} ${a[1]} ${a[2]} ${a[3]}" fill="none" stroke="#8C3A4B" stroke-width="13" stroke-linecap="round"/><circle cx="${a[2]}" cy="${a[3]}" r="8" fill="${sk}"/>`;
-  return `<svg viewBox="0 0 180 200" role="img" aria-label="Sunucu"><g class="bob"><path d="M45 200L52 128Q80 112 108 128L115 200Z" fill="#8C3A4B"/><path d="M70 122L80 150L90 122Z" fill="#F4E9DE"/><path d="M77 128L80 156L83 128Z" fill="#CB9A46"/>${arm("58 128",p.L)}${arm("102 128",p.R)}<rect x="72" y="100" width="16" height="16" fill="${sk}"/><circle cx="80" cy="78" r="30" fill="${sk}"/><path d="M50 76Q50 44 80 44Q110 44 110 76Q98 58 80 58Q62 58 50 76Z" fill="#2A1A14"/><circle cx="69" cy="78" r="3" fill="#2A1A14"/><circle cx="91" cy="78" r="3" fill="#2A1A14"/><path d="${p.b}" stroke="#2A1A14" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="${p.m}" stroke="#7A2233" stroke-width="3" stroke-linecap="round" fill="${p.f||"none"}"/></g></svg>`;
-}
-
 function line(){
   const N=S.n;
   if(S.ph==="intro")return [
-    {t:`Merhaba ${N[0]} ve ${N[1]}! Aramızda Kalsın düellosuna hoş geldiniz.`,p:"wave"},
-    {t:"Kural basit: soruyu ilk doğru bilen puanı alır. Yanlış şıkka basarsanız ekran kızarır ve söz rakibe geçer.",p:"point"},
-    {t:"Parmaklar hazırsa ilk soruya geçiyoruz!",p:"cheer"}][S.l];
+    {t:`Merhaba ${N[0]} ve ${N[1]}! Aramızda Kalsın düellosuna hoş geldiniz.`,p:"wave",a:"welcome.mp3"},
+    {t:"Kural basit: soruyu ilk doğru bilen puanı alır. Yanlış şıkka basarsanız ekran kızarır ve söz rakibe geçer.",p:"point",a:"rules.mp3"},
+    {t:"Parmaklar hazırsa ilk soruya geçiyoruz!",p:"cheer",a:"start.mp3"}][S.l];
   if(S.ph==="q"){
-    if(S.lw>=0)return {t:`Yanlış! Cevap hakkı ${N[1-S.lw]} tarafına geçti.`,p:"oops"};
+    if(S.lw>=0)return {t:`Yanlış! Cevap hakkı ${N[1-S.lw]} tarafına geçti.`,p:"oops",a:"wrong.mp3"};
     return {t:`Soru ${S.q+1}!`,s:Q[S.q].q,p:S.q%2?"think":"point"};
   }
-  if(S.ph==="rev")return S.w>=0?{t:`Doğru! Puanı ${N[S.w]} aldı.`,p:"cheer"}:{t:`İkiniz de bilemediniz. Doğru cevap: ${Q[S.q].o[Q[S.q].c]}.`,p:"sad"};
-  if(S.ph==="end"){const [x,y]=S.sc;return x===y?{t:"Berabere! İkiniz de harikasınız.",p:"wave"}:{t:`Kazanan ${N[x>y?0:1]}! Tebrikler.`,p:"cheer"};}
+  if(S.ph==="rev")return S.w>=0?{t:`Doğru! Puanı ${N[S.w]} aldı.`,p:"cheer",a:"correct.mp3"}:{t:`İkiniz de bilemediniz. Doğru cevap: ${Q[S.q].o[Q[S.q].c]}.`,p:"sad",a:"nobody.mp3"};
+  if(S.ph==="end"){const [x,y]=S.sc;return x===y?{t:"Berabere! İkiniz de harikasınız.",p:"wave",a:"tie.mp3"}:{t:`Kazanan ${N[x>y?0:1]}! Tebrikler.`,p:"cheer",a:"win.mp3"};}
   return {t:"",p:"point"};
 }
 
@@ -146,7 +133,14 @@ function say(L){
   clearInterval(typer);
   const el=$("txt");el.textContent="";let i=0;
   typer=setInterval(()=>{el.textContent=L.t.slice(0,++i);if(i>=L.t.length)clearInterval(typer)},26);
-  if(muted||!("speechSynthesis" in window)||!(L.s||L.t))return;
+  if(muted)return;
+  const voice=$("voice");
+  if(L.a){
+    try{voice.pause();voice.currentTime=0;voice.src=L.a;voice.play().catch(()=>{})}catch(e){}
+    return;
+  }
+  try{voice.pause()}catch(e){}
+  if(!("speechSynthesis" in window)||!(L.s||L.t))return;
   try{
     speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(L.s||L.t);u.lang="tr-TR";
@@ -154,7 +148,10 @@ function say(L){
     if(v)u.voice=v;speechSynthesis.speak(u);
   }catch(e){}
 }
-function prime(){try{speechSynthesis.speak(new SpeechSynthesisUtterance(""))}catch(e){}}
+function prime(){
+  try{speechSynthesis.speak(new SpeechSynthesisUtterance(""))}catch(e){}
+  try{const v=$("voice");v.play().then(()=>v.pause()).catch(()=>{})}catch(e){}
+}
 function flash(){const f=$("flash");f.classList.remove("go");void f.offsetWidth;f.classList.add("go")}
 
 function render(){
@@ -162,7 +159,13 @@ function render(){
   if(S.ph==="lobby"){show("lobby");$("code").textContent=(code||"").toUpperCase();return}
   show("game");
   const L=line(),key=[S.ph,S.l,S.q,S.lw,S.w].join();
-  if(key!==lastKey){lastKey=key;$("stage").innerHTML=svg(L.p);say(L)}
+  if(key!==lastKey){
+    lastKey=key;
+    const img=$("hostImg");
+    img.src=L.p+".png";
+    img.classList.remove("pop");void img.offsetWidth;img.classList.add("pop");
+    say(L);
+  }
   $("sc0").textContent=`${S.n[0]}${me===0?" (sen)":""}: ${S.sc[0]}`;
   $("sc1").textContent=`${S.n[1]}${me===1?" (sen)":""}: ${S.sc[1]}`;
   const inQ=S.ph==="q"||S.ph==="rev",q=Q[S.q];
@@ -231,7 +234,7 @@ function listen(c){
 function leave(){
   if(unsub)unsub();
   unsub=null;S=null;code=null;lastKey="";
-  try{sessionStorage.removeItem("ak");speechSynthesis.cancel()}catch(e){}
+  try{sessionStorage.removeItem("ak");speechSynthesis.cancel();$("voice").pause()}catch(e){}
   show("home");
 }
 
@@ -270,7 +273,7 @@ $("exit").onclick=leave;
 $("exit2").onclick=leave;
 $("mute").onclick=()=>{
   muted=!muted;$("mute").textContent=muted?"🔇":"🔊";
-  if(muted)try{speechSynthesis.cancel()}catch(e){}
+  if(muted){try{speechSynthesis.cancel()}catch(e){}try{$("voice").pause()}catch(e){}}
 };
 
 try{
