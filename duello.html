@@ -204,16 +204,16 @@ function line(){
       {t:"Kural basit: soruyu ilk doğru bilen puanı alır. Yanlış şıkka basarsanız ekran kızarır ve söz rakibe geçer.",p:"point",a:"rules.mp3"},
       {t:"Parmaklar hazırsa ilk soruya geçiyoruz!",p:"cheer",a:"start.mp3"}][S.l];
     return [
-      {t:`2. Tur: Ne Kadar Tanıyorsun! Önce ${N[0]} kendi hakkında 3 soru cevaplayacak, sonra ${N[1]} bu cevapları bilmeye çalışacak.`,p:"point"},
-      {t:"Sonra sıra değişecek, roller yer değiştirecek.",p:"think"},
-      {t:"Her doğru tahmin 2 puan kazandırır. Hazırsanız başlıyoruz!",p:"cheer"}][S.l];
+      {t:"2. Tur: Ne Kadar Tanıyorsun! Önce biriniz kendi hakkında 3 soru cevaplayacak, sonra diğeri bu cevapları bilmeye çalışacak.",p:"point",a:"r2_intro1.mp3"},
+      {t:"Sonra sıra değişecek, roller yer değiştirecek.",p:"think",a:"r2_intro2.mp3"},
+      {t:"Her doğru tahmin 2 puan kazandırır. Hazırsanız başlıyoruz!",p:"cheer",a:"r2_intro3.mp3"}][S.l];
   }
   if(S.ph==="q"){
     if(S.lw>=0){
       if(me===S.lw)return {t:`Yanlış cevap! Sıra ${N[1-S.lw]}'de.`,p:"oops",a:"wrong.mp3"};
       return {t:`${N[S.lw]} yanlış bildi. Şimdi sırada sen varsın!`,p:"point",a:"wrong_other.mp3"};
     }
-    return {t:`Soru ${S.q+1}!`,s:Q[S.q].q,p:S.q%2?"think":"point"};
+    return {t:`Soru ${S.q+1}!`,p:S.q%2?"think":"point",n:1};
   }
   if(S.ph==="rev"){
     if(S.w>=0){
@@ -224,20 +224,18 @@ function line(){
   }
   if(S.ph==="r2answer"){
     if(me===S.r2.ansBy){
-      const q=r2q(S,S.r2.ai);
-      const intro=S.r2.ai===0?`Şimdi sırada sen varsın, ${N[me]}! `:"";
-      return {t:`${intro}Kendi cevabını seç, eşin bu ekranı görmüyor.`,s:q.q,p:"think"};
+      return S.r2.ai===0?{t:"Şimdi sırada sen varsın! Kendi cevabını seç, eşin bu ekranı görmüyor.",p:"think",a:"r2_answer_first.mp3"}:{t:"Kendi cevabını seç, eşin bu ekranı görmüyor.",p:"think",a:"r2_answer_next.mp3"};
     }
-    return {t:`${N[S.r2.ansBy]} kendi hakkında sorulara cevap veriyor. Az sonra sıra sende!`,s:"Eşin cevap veriyor, biraz bekle.",p:"wave"};
+    return {t:"Eşin kendi hakkında sorulara cevap veriyor. Az sonra sıra sende!",p:"wave",a:"r2_wait.mp3"};
   }
   if(S.ph==="r2guess"){
     const g=S.r2.guesses[S.r2.gi];
     if(g===null||g===undefined){
-      const q=r2q(S,S.r2.gi);
-      return {t:me===S.r2.gsBy?"Sence hangisini seçti? Tahmin et!":`${N[S.r2.gsBy]} tahmin ediyor, izle!`,s:q.q,p:"think"};
+      return me===S.r2.gsBy?{t:"Sence hangisini seçti? Tahmin et!",p:"think",a:"r2_guess_me.mp3"}:{t:"Eşin tahmin ediyor, izle!",p:"think",a:"r2_guess_watch.mp3"};
     }
-    const ok=g===S.r2.answers[S.r2.gi];
-    return ok?{t:`${N[S.r2.gsBy]} doğru bildi! +2 puan.`,p:"cheer"}:{t:`${N[S.r2.gsBy]} bilemedi. Doğru cevap: "${r2q(S,S.r2.gi).o[S.r2.answers[S.r2.gi]]}".`,p:"sad"};
+    const ok=g===S.r2.answers[S.r2.gi],mine=me===S.r2.gsBy;
+    if(ok)return mine?{t:"Doğru bildin! +2 puan.",p:"cheer",a:"r2_right_me.mp3"}:{t:"Eşin doğru bildi! +2 puan.",p:"cheer",a:"r2_right_other.mp3"};
+    return mine?{t:"Bilemedin.",p:"sad",a:"r2_wrong_me.mp3"}:{t:"Eşin bilemedi.",p:"sad",a:"r2_wrong_other.mp3"};
   }
   if(S.ph==="end"){
     const [x,y]=S.sc;
@@ -264,6 +262,7 @@ function say(L){
   typer=setInterval(()=>{el.textContent=L.t.slice(0,++i);if(i>=L.t.length)clearInterval(typer)},26);
   if(muted)return;
   const voice=$("voice");
+  if(L.n){try{voice.pause()}catch(e){}try{speechSynthesis.cancel()}catch(e){}return}
   if(L.a){
     try{
       voice.onerror=()=>speakTTS(L.s||L.t);
@@ -318,7 +317,7 @@ function renderInner(){
   const box=$("opts");box.replaceChildren();
   let qc="",chip="",showQC=false;
 
-if(S.ph==="q"){
+  if(S.ph==="q"){
     const q=Q[S.q];showQC=true;qc=`${S.q+1}/${Q.length} · ${q.q}`;
     q.o.forEach((t,i)=>{
       const b=document.createElement("button");
