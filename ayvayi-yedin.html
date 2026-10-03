@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ayvayı Yedin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Karla:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1D0F26;--s:#2C1735;--s2:#3A2043;--gold:#CB9A46;--red:#C0364A;--green:#3E9B6B;--text:#F4E9DE;--mut:#B6A0BE;--line:rgba(244,233,222,.14);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--text);font-family:'Karla',sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:480px;min-height:100%;padding:16px 18px 20px;display:flex;flex-direction:column}
+.scr{display:none;flex-direction:column;flex:1}.scr.on{display:flex}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:40px;line-height:1.05;color:var(--gold);margin:14px 0 6px}
+.sub{color:var(--mut);font-size:15px;line-height:1.5;margin:0 0 22px}
+label{font-size:13px;color:var(--mut);display:block;margin-bottom:6px}
+input{width:100%;background:var(--s2);border:1px solid var(--line);color:var(--text);font:16px 'Karla',sans-serif;padding:13px 14px;border-radius:12px;margin-bottom:14px}
+button{font:700 15px 'Karla',sans-serif;border:none;border-radius:12px;padding:15px 18px;cursor:pointer}
+.pri{background:var(--gold);color:#241308;width:100%}
+.pri:disabled{opacity:.5;cursor:default}
+.ghost{background:transparent;color:var(--text);border:1px solid var(--line);width:100%}
+.or{text-align:center;color:var(--mut);font-size:13px;margin:14px 0}
+.note{color:var(--mut);font-size:13px;line-height:1.5;margin-top:12px}
+.mid{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.code{font-family:'Fraunces',serif;font-size:64px;font-weight:600;letter-spacing:.12em;color:var(--gold);margin:6px 0 18px}
+.top{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px;gap:6px}
+.top span{flex:1}.top span:nth-child(2){text-align:right}
+.ib{background:transparent;color:var(--text);padding:4px 8px;font-size:18px}
+#st{background:var(--s);border:1px solid var(--line);border-radius:18px;padding:12px 14px;font-family:'Fraunces',serif;font-size:17px;line-height:1.4;margin:12px 0}
+.cap{color:var(--mut);font-size:13px;margin:8px 0 8px;text-align:center}
+.bd{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 auto}
+.bd.big{width:min(100%,250px)}
+.bd.sm{width:min(58%,150px);gap:6px}
+.t{aspect-ratio:1;padding:6px;background:var(--s2);border:1px solid var(--line);border-radius:12px;display:flex}
+.t svg{width:100%;height:100%}
+.t:disabled{cursor:default}
+.t.act{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.t.pick{background:#4a2c55;border-color:var(--gold)}
+.t.gone{opacity:.25}
+.t.bad{background:var(--red);border-color:var(--red)}
+#chips{color:var(--mut);font-size:13px;text-align:center;margin:12px 0 8px;min-height:18px}
+#btn{margin-top:auto}
+#dbg{position:fixed;left:8px;right:8px;bottom:8px;background:#C0364A;color:#fff;font:12px sans-serif;padding:8px;border-radius:8px;display:none;z-index:9}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="pear" viewBox="0 0 64 64"><path d="M32 12c-6 0-9 5-9 10 0 4-8 9-8 20 0 9 7 14 17 14s17-5 17-14c0-11-8-16-8-20 0-5-3-10-9-10z" fill="#8DBF4A"/><path d="M32 12c0-4 1-7 4-9" stroke="#6B4A2B" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M36 8c4-3 9-2 11 1-4 3-9 3-11-1z" fill="#4E8F3A"/><ellipse cx="26" cy="38" rx="3" ry="6" fill="#fff" opacity=".25"/></symbol>
+<symbol id="quince" viewBox="0 0 64 64"><path d="M32 14c-12 0-20 8-20 20 0 12 8 20 20 20s20-8 20-20c0-12-8-20-20-20z" fill="#E8C23A"/><path d="M32 14c0-4 1-7 4-9" stroke="#6B4A2B" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M36 9c4-3 9-2 11 1-4 3-9 3-11-1z" fill="#5C8F3A"/><circle cx="24" cy="30" r="3" fill="#fff" opacity=".35"/><circle cx="38" cy="42" r="2" fill="#B8921F" opacity=".5"/><circle cx="26" cy="44" r="1.6" fill="#B8921F" opacity=".5"/></symbol>
+</svg>
+<div id="dbg"></div>
+<div id="app">
+  <section class="scr on" id="home">
+    <h1>Ayvayı Yedin</h1>
+    <p class="sub">İki telefondan oynanan armut ve ayva oyunu. Rakibin gizlediği ayvalara denk gelmeden armutları bitir!</p>
+    <label for="pname">Adın</label>
+    <input id="pname" maxlength="16" placeholder="Adın">
+    <button class="pri" id="mk">Oda Oluştur</button>
+    <div class="or">veya</div>
+    <input id="cd" maxlength="4" placeholder="4 haneli oda kodu" autocapitalize="characters">
+    <button class="ghost" id="jn">Odaya Gir</button>
+    <p class="note" id="msg"></p>
+  </section>
+
+  <section class="scr" id="lobby">
+    <div class="mid">
+      <p class="sub" style="margin:0">Oda kodun</p>
+      <div class="code" id="code"></div>
+      <p class="sub">Eşin "Odaya Gir" diyerek bu kodu yazsın. Katıldığı anda oyun başlar.</p>
+      <button class="ghost" id="exit2" style="max-width:200px">Vazgeç</button>
+    </div>
+  </section>
+
+  <section class="scr" id="game">
+    <div class="top"><span id="sc0"></span><span id="sc1"></span><button class="ib" id="exit" aria-label="Çık">✕</button></div>
+    <div id="st"></div>
+    <div class="cap" id="cap1"></div>
+    <div class="bd big" id="b1"></div>
+    <div class="cap" id="cap2"></div>
+    <div class="bd sm" id="b2"></div>
+    <div id="chips"></div>
+    <button class="pri" id="btn">Hazırım</button>
+  </section>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getDatabase,ref,get,set,onValue,runTransaction} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const db=getDatabase(initializeApp({
+  apiKey:"AIzaSyAiCXQjwA7_31Lf27EO3gNcTOomfYpagtg",
+  authDomain:"oyna-bakalim.firebaseapp.com",
+  databaseURL:"https://oyna-bakalim-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"oyna-bakalim",
+  storageBucket:"oyna-bakalim.firebasestorage.app",
+  messagingSenderId:"724315046366",
+  appId:"1:724315046366:web:0c3bf4b39e3854c83edd4f"
+}));
+
+const $=id=>document.getElementById(id);
+let S=null,code=null,me=0,unsub=null,sel=[];
+const show=id=>document.querySelectorAll(".scr").forEach(s=>s.classList.toggle("on",s.id===id));
+const setMsg=t=>{$("msg").textContent=t};
+const myName=()=>($("pname").value.trim()||"Oyuncu").slice(0,16);
+const FAIL="Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.";
+const sref=c=>ref(db,"ayva/"+c+"/s");
+const save=c=>{try{sessionStorage.setItem("ay",JSON.stringify({c,me}))}catch(e){}};
+function dbg(m){const d=$("dbg");d.textContent=m;d.style.display="block"}
+window.addEventListener("error",e=>dbg("Hata: "+e.message));
+window.addEventListener("unhandledrejection",e=>dbg("Hata: "+(e.reason&&e.reason.message||e.reason)));
+
+/*LOGIC*/
+const E9="000000000";
+const norm=s=>{
+  const a=(x,d)=>[0,1].map(i=>x&&x[i]!==undefined&&x[i]!==null?x[i]:d);
+  s.n=a(s.n,"");s.g=a(s.g,"-");s.e=a(s.e,E9);s.rdy=a(s.rdy,0);
+  s.t=s.t||0;s.w=(s.w===undefined||s.w===null)?-1:s.w;s.ph=s.ph||"lobby";return s};
+const cnt=(s,i,quince)=>{let c=0;const g=s.g[1-i],e=s.e[1-i];for(let k=0;k<9;k++)if(e[k]==="1"&&(g[k]==="1")===quince)c++;return c};
+function settle(s,i){
+  const q=[cnt(s,0,true),cnt(s,1,true)],d=[cnt(s,0,false)===6,cnt(s,1,false)===6];
+  const fin=w=>{s.ph="end";s.w=w;s.rdy=[0,0]};
+  for(const p of [i,1-i])if(q[p]===3)return fin(1-p);
+  if(d[0]&&d[1])return fin(q[0]===q[1]?-1:(q[0]<q[1]?0:1));
+  for(const p of [0,1])if(d[p]&&q[1-p]>q[p])return fin(p);
+  s.t=d[1-i]?i:1-i;
+}
+function apply(s,i,a){
+  if(a.k==="join"){
+    if(s.ph!=="lobby")return false;
+    s.n[1]=a.name;s.ph="setup";return true;
+  }
+  if(a.k==="place"){
+    if(s.ph!=="setup"||s.g[i]!=="-"||typeof a.g!=="string"||!/^[01]{9}$/.test(a.g)||(a.g.match(/1/g)||[]).length!==3)return false;
+    s.g[i]=a.g;
+    if(s.g[0]!=="-"&&s.g[1]!=="-"){s.ph="play";s.t=Math.random()<.5?0:1;s.e=[E9,E9];s.w=-1}
+    return true;
+  }
+  if(a.k==="pick"){
+    if(s.ph!=="play"||i!==s.t||!Number.isInteger(a.c)||a.c<0||a.c>8||s.e[1-i][a.c]!=="0")return false;
+    const r=s.e[1-i].split("");r[a.c]="1";s.e[1-i]=r.join("");
+    settle(s,i);return true;
+  }
+  if(a.k==="again"){
+    if(s.ph!=="end"||s.rdy[i])return false;
+    s.rdy[i]=1;
+    if(s.rdy[0]&&s.rdy[1]){s.ph="setup";s.g=["-","-"];s.e=[E9,E9];s.w=-1;s.rdy=[0,0]}
+    return true;
+  }
+  return false;
+}
+/*END*/
+
+function run(i,a){
+  if(!code)return Promise.resolve(null);
+  return runTransaction(sref(code),cur=>{
+    if(cur===null)return cur;
+    const s=norm(JSON.parse(JSON.stringify(cur)));
+    if(!apply(s,i,a))return;
+    return s;
+  }).catch(e=>{dbg("run: "+(e&&e.message));return null});
+}
+
+function ico(b,id){b.innerHTML='<svg><use href="#'+id+'"/></svg>'}
+function board(el,cls,cell){
+  el.className="bd "+cls;el.replaceChildren();
+  for(let k=0;k<9;k++){const b=document.createElement("button");b.type="button";b.className="t";cell(b,k);el.appendChild(b)}
+}
+function render(){try{draw()}catch(e){dbg("render: "+e.message+(S?" ("+S.ph+")":""))}}
+function draw(){
+  if(!S){show("home");return}
+  if(S.ph==="lobby"){show("lobby");$("code").textContent=(code||"").toUpperCase();return}
+  show("game");
+  const N=S.n,op=1-me;
+  $("sc0").textContent=N[0]+(me===0?" (sen)":"");
+  $("sc1").textContent=N[1]+(me===1?" (sen)":"");
+  const btn=$("btn");btn.style.display="none";
+  let st="",c1="",c2="",chips="";
+
+  if(S.ph==="setup"){
+    const placed=S.g[me]!=="-";
+    const chosen=k=>placed?S.g[me][k]==="1":sel.includes(k);
+    st=placed?"Ayvaların hazır. Rakibin seçimini bitirmesi bekleniyor…":"Ayvalarını seç: 3 armudu ayvayla değiştir. Rakibin göremez!";
+    c1="Senin tablon";c2="";
+    board($("b1"),"big",(b,k)=>{
+      const on=chosen(k);ico(b,on?"quince":"pear");if(on)b.classList.add("pick");
+      b.disabled=placed;
+      b.onclick=()=>{if(sel.includes(k))sel=sel.filter(x=>x!==k);else if(sel.length<3)sel=[...sel,k];render()};
+    });
+    $("b2").style.display="none";
+    chips=placed?"":`Seçilen ayva: ${sel.length}/3`;
+    btn.style.display="block";
+    btn.disabled=placed||sel.length!==3;
+    btn.textContent=placed?"Rakip bekleniyor…":"Hazırım";
+    btn.onclick=()=>{if(sel.length!==3)return;run(me,{k:"place",g:[...Array(9).keys()].map(k=>sel.includes(k)?"1":"0").join("")})};
+  }else{
+    const end=S.ph==="end",myTurn=S.ph==="play"&&S.t===me;
+    const og=S.g[op],oe=S.e[op],mg=S.g[me],me_e=S.e[me];
+    const qMe=cnt(S,me,true),qOp=cnt(S,op,true);
+    if(end){
+      if(S.w===-1)st="Berabere! Armutlar bitti, yenen ayva sayısı eşit.";
+      else if(S.w===me)st=qMe===3?"Kazandın! Rakip 3 ayvayı birden yedi.":(qOp===3?"Kazandın!":"Kazandın! Daha az ayva yedin.");
+      else st=qMe===3?"Kaybettin. 3 ayvayı yedin.":"Kaybettin. Rakip daha az ayva yedi.";
+    }else st=myTurn?"Sıra sende. Rakibin tablosundan bir armut seç!":`Sıra ${N[S.t]}'de…`;
+    c1=`${N[op]} tablosu`+(myTurn?" · dokun ve ye":"");
+    c2="Senin tablon";
+    board($("b1"),"big",(b,k)=>{
+      const eaten=oe[k]==="1",q=og[k]==="1";
+      ico(b,(eaten||end)&&q?"quince":"pear");
+      if(eaten&&q)b.classList.add("bad");
+      else if(eaten)b.classList.add("gone");
+      else if(end&&q)b.classList.add("pick");
+      else if(myTurn)b.classList.add("act");
+      b.disabled=!myTurn||eaten;
+      b.onclick=()=>run(me,{k:"pick",c:k});
+    });
+    $("b2").style.display="";
+    board($("b2"),"sm",(b,k)=>{
+      const q=mg[k]==="1",eaten=me_e[k]==="1";
+      ico(b,q?"quince":"pear");
+      if(eaten)b.classList.add(q?"bad":"gone");else if(q)b.classList.add("pick");
+      b.disabled=true;
+    });
+    chips=`Yediğin ayva: ${qMe}/3 · Rakibin yediği ayva: ${qOp}/3`;
+    if(end){
+      btn.style.display="block";
+      if(S.rdy[me]){btn.disabled=true;btn.textContent="Diğer oyuncu bekleniyor…"}
+      else{btn.disabled=false;btn.textContent="Yeniden Oyna"}
+      btn.onclick=()=>run(me,{k:"again"});
+    }
+  }
+  $("st").textContent=st;$("cap1").textContent=c1;$("cap2").textContent=c2;
+  $("cap2").style.display=c2?"":"none";$("chips").textContent=chips;
+}
+
+/* --- Oda yönetimi --- */
+function listen(c){
+  if(unsub)unsub();
+  code=c;
+  unsub=onValue(sref(c),snap=>{
+    const v=snap.val();
+    if(v===null&&S){leave("Oda kapandı.");return}
+    S=v?norm(v):null;
+    render();
+  });
+}
+function leave(m){
+  if(unsub)unsub();
+  unsub=null;S=null;code=null;sel=[];
+  try{sessionStorage.removeItem("ay")}catch(e){}
+  show("home");setMsg(m||"");
+}
+async function closeRoom(){
+  const c=code;
+  try{if(c)await set(ref(db,"ayva/"+c),null)}catch(e){}
+  leave("");
+}
+
+$("mk").onclick=async()=>{
+  setMsg("Bağlanılıyor…");
+  try{
+    const al="abcdefghjkmnpqrstuvwxyz23456789";
+    let c="",ok=false;
+    for(let t=0;t<5&&!ok;t++){
+      c="";for(let i=0;i<4;i++)c+=al[Math.floor(Math.random()*al.length)];
+      ok=!(await get(sref(c))).exists();
+    }
+    if(!ok)return setMsg("Oda kodu üretilemedi, tekrar dene.");
+    me=0;sel=[];
+    await set(sref(c),{ph:"lobby",t:0,w:-1,g:["-","-"],e:[E9,E9],rdy:[0,0],n:[myName(),""]});
+    save(c);listen(c);setMsg("");
+  }catch(e){setMsg(FAIL)}
+};
+$("jn").onclick=async()=>{
+  const c=$("cd").value.trim().toLowerCase();
+  if(!/^[a-z0-9]{4}$/.test(c))return setMsg("4 haneli oda kodunu yaz.");
+  setMsg("Bağlanılıyor…");
+  try{
+    const sn=await get(sref(c));
+    if(!sn.exists())return setMsg("Oda bulunamadı. Kodu kontrol et.");
+    if(norm(sn.val()).ph!=="lobby")return setMsg("Bu odada oyun zaten başlamış.");
+    me=1;sel=[];listen(c);
+    const r=await run(1,{k:"join",name:myName()});
+    if(!r||!r.committed){leave("Odaya girilemedi. Kodu kontrol edip tekrar dene.");return}
+    save(c);setMsg("");
+  }catch(e){leave(FAIL)}
+};
+$("exit").onclick=()=>{if(confirm("Oyundan çıkılsın mı? Oda iki oyuncu için de kapanır."))closeRoom()};
+$("exit2").onclick=closeRoom;
+
+try{
+  const r=JSON.parse(sessionStorage.getItem("ay")||"null");
+  if(r&&r.c){me=r.me;listen(r.c)}
+}catch(e){}
+</script>
+</body>
+</html>
